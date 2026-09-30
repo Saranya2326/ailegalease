@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LegalEase - AI-Powered Legal Document Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root{
+    --ink: #14213d;
+    --ink-soft: #2c3e66;
+    --ink-light: #475569;
+    --paper: #FFFFFF;
+    --paper-line: #E2E8F0;
+    --panel: #F8FAFC;
+    --gold: #C59B27;
+    --gold-soft: #FBF7EE;
+    --gold-border: #E8D39E;
+    --slate: #64748B;
+    --flag-warn: #D97706;
+    --flag-warn-bg: #FEF3C7;
+    --flag-danger: #DC2626;
+    --flag-danger-bg: #FEE2E2;
+    --flag-info: #2563EB;
+    --flag-info-bg: #EFF6FF;
+    --success: #16A34A;
+    --success-bg: #DCFCE7;
+    --radius-doc: 4px;
+    --radius-ui: 8px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin:0;
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #F1F5F9;
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  header{
+    padding: 14px 32px;
+    border-bottom: 1px solid var(--paper-line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+  .brand-group{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .brand-group .logo{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .brand-group .logo-icon{
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #14213d, #2c3e66);
+    color: #fff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(20,33,61,0.2);
+  }
+  .brand-group .mark{
+    font-family: 'Source Serif 4', serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .brand-group .doc-name{
+    color: var(--slate);
+    font-size: 13.5px;
+    font-weight: 500;
+    background: #F1F5F9;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .header-actions{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Status Pill */
+  .status-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: #F1F5F9;
+    color: var(--slate);
+    border: 1px solid var(--paper-line);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .status-pill .dot{
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #94A3B8;
+  }
+  .status-pill.connected .dot{ background: var(--success); box-shadow: 0 0 0 2px rgba(22,163,74,0.2); }
+  .status-pill.connected{ color: #15803D; background: var(--success-bg); border-color: #BBF7D0; }
+  .status-pill.disconnected .dot{ background: var(--flag-danger); }
+  .status-pill.disconnected{ color: #B91C1C; background: var(--flag-danger-bg); border-color: #FECACA; }
+
+  /* User Badge & Auth Button */
+  .auth-btn{
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--paper-line);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .auth-btn:hover{
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+  }
+  .user-badge{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    padding: 4px 10px;
+    background: #F8FAFC;
+    border: 1px solid var(--paper-line);
+    border-radius: 20px;
+  }
+  .user-badge .avatar{
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  /* Main Layout */
+  .layout{
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    flex: 1;
+    min-height: calc(100vh - 65px);
+  }
+
+  /* Wizard Sidebar */
+  .wizard{
+    padding: 28px 24px 60px;
+    border-right: 1px solid var(--paper-line);
+    background: var(--paper);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .template-select-bar{
+    margin-bottom: 24px;
+  }
+  .template-select-bar label{
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--slate);
+    margin-bottom: 6px;
+  }
+
+  .steps{
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .steps .dot{
+    flex: 1;
+    height: 4px;
+    background: var(--paper-line);
+    border-radius: 3px;
+    transition: background .25s ease;
+  }
+  .steps .dot.done{ background: var(--gold); }
+
+  .step-label{
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .step-title{
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 18px;
+  }
+
+  .field{ margin-bottom: 18px; }
+  .field label{
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--ink-soft);
+  }
+  .field input, .field select, .field textarea{
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--paper-line);
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    background: #FAFAFA;
+    color: var(--ink);
+    transition: all 0.2s ease;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline: none;
+    background: #fff;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(197, 155, 39, 0.15);
+  }
+  .field .helper{
+    font-size: 12px;
+    color: var(--slate);
+    margin-top: 4px;
+  }
+
+  .field-row{ display: flex; gap: 12px; }
+  .field-row .field{ flex: 1; }
+
+  .nav-buttons{
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--paper-line);
+  }
+  button{
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.15s ease;
+  }
+  button:hover:not(:disabled){
+    background: #0f172a;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+  button.primary-gold{
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #fff;
+  }
+  button.primary-gold:hover:not(:disabled){
+    background: #B08D57;
+    border-color: #B08D57;
+  }
+  button.ghost{
+    background: transparent;
+    color: var(--ink-soft);
+    border-color: var(--paper-line);
+  }
+  button.ghost:hover:not(:disabled){
+    background: #F1F5F9;
+    border-color: #CBD5E1;
+    color: var(--ink);
+  }
+  button:disabled{
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  /* Preview Section */
+  .preview-pane{
+    padding: 32px 40px 60px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #F8FAFC;
+  }
+
+  .toolbar{
+    max-width: 720px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background: var(--paper);
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--paper-line);
+    box-shadow: var(--shadow-sm);
+  }
+  .toolbar-left{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .toolbar-right{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .badge-tag{
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #E2E8F0;
+    color: var(--ink-soft);
+  }
+  .badge-tag.draft{ background: #FEF3C7; color: #92400E; }
+  .badge-tag.synced{ background: #DCFCE7; color: #166534; }
+
+  /* Document Paper */
+  .paper{
+    max-width: 720px;
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(20,33,61,0.04), 0 12px 32px rgba(20,33,61,0.06);
+    padding: 60px 64px 72px;
+    font-family: 'Source Serif 4', Georgia, serif;
+    line-height: 1.7;
+    font-size: 16px;
+    color: #1E293B;
+    position: relative;
+  }
+  .paper h1{
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    margin: 0 0 8px;
+    color: #0F172A;
+  }
+  .paper .subline{
+    text-align: center;
+    color: var(--slate);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    margin-bottom: 40px;
+    font-weight: 400;
+  }
+  .clause{
+    margin-bottom: 22px;
+    padding: 10px 14px 10px 16px;
+    border-left: 3px solid transparent;
+    border-radius: var(--radius-doc);
+    position: relative;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .clause:hover{
+    border-left-color: var(--gold);
+    background: rgba(197, 155, 39, 0.05);
+  }
+  .clause .num{
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--ink);
+    margin-right: 6px;
+  }
+  .clause.flagged-warn{
+    border-left-color: var(--flag-warn);
+    background: var(--flag-warn-bg);
+  }
+  .clause.flagged-danger{
+    border-left-color: var(--flag-danger);
+    background: var(--flag-danger-bg);
+  }
+  .clause.flagged-info{
+    border-left-color: var(--flag-info);
+    background: var(--flag-info-bg);
+  }
+  .clause .flag-badge{
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-bottom: 4px;
+  }
+  .clause .flag-note{
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+  .flagged-warn .flag-note{ color: #92400E; }
+  .flagged-danger .flag-note{ color: #991B1B; }
+  .flagged-info .flag-note{ color: #1E40AF; }
+
+  .placeholder{
+    color: #B45309;
+    font-weight: 600;
+    background: #FFFBEB;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  .explain-trigger{
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    opacity: 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .clause:hover .explain-trigger{
+    opacity: 1;
+  }
+
+  /* Risk Summary Cards */
+  .risk-panel{
+    max-width: 720px;
+    width: 100%;
+    margin-top: 24px;
+    background: var(--paper);
+    border: 1px solid var(--paper-line);
+    border-radius: 8px;
+    padding: 20px 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .risk-panel h3{
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .risk-card{
+    display: flex;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .risk-card.warn{ background: var(--flag-warn-bg); color: #92400E; border: 1px solid #FDE68A; }
+  .risk-card.danger{ background: var(--flag-danger-bg); color: #991B1B; border: 1px solid #FECACA; }
+  .risk-card.info{ background: var(--flag-info-bg); color: #1E40AF; border: 1px solid #BFDBFE; }
+
+  /* Modals and Drawers */
+  .modal-overlay{
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .modal-overlay.open{
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .modal-box{
+    background: var(--paper);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 440px;
+    padding: 32px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--paper-line);
+    position: relative;
+    transform: translateY(10px);
+    transition: transform 0.2s ease;
+  }
+  .modal-overlay.open .modal-box{
+    transform: translateY(0);
+  }
+  .modal-close{
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    color: var(--slate);
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+  }
+  .modal-title{
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0 0 6px;
+  }
+  .modal-subtitle{
+    font-size: 13.5px;
+    color: var(--slate);
+    margin: 0 0 20px;
+  }
+
+  /* Drawer for Document History */
+  .drawer-overlay{
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .drawer-overlay.open{
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .drawer{
+    position: fixed;
+    top:0; right:0; bottom:0;
+    width: 380px;
+    background: var(--paper);
+    box-shadow: var(--shadow-lg);
+    z-index: 95;
+    transform: translateX(100%);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+  }
+  .drawer-overlay.open .drawer{
+    transform: translateX(0);
+  }
+  .drawer-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--paper-line);
+    margin-bottom: 16px;
+  }
+  .doc-list{
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .doc-item{
+    padding: 14px;
+    border: 1px solid var(--paper-line);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #FAFAFA;
+  }
+  .doc-item:hover{
+    background: #fff;
+    border-color: var(--gold);
+    box-shadow: var(--shadow-sm);
+  }
+  .doc-item-title{
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .doc-item-meta{
+    font-size: 12px;
+    color: var(--slate);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Clause Explanation Modal */
+  .explain-modal{
+    background: #14213D;
+    color: #F8FAFC;
+    border-radius: 10px;
+    padding: 20px 24px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid #2C3E66;
+  }
+  .explain-modal h4{
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .explain-modal p{
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #E2E8F0;
+  }
+
+  /* Toast Notification */
+  .toast-container{
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 110;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast{
+    padding: 12px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--ink);
+    color: #fff;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn{
+    from{ transform: translateY(10px); opacity: 0; }
+    to{ transform: translateY(0); opacity: 1; }
+  }
+
+  @media (max-width: 900px){
+    .layout{ grid-template-columns: 1fr; }
+    .wizard{ border-right: none; border-bottom: 1px solid var(--paper-line); }
+    .preview-pane{ padding: 20px; }
+    .paper{ padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="brand-group">
+    <div class="logo">
+      <div class="logo-icon">§</div>
+      <span class="mark">LegalEase</span>
+    </div>
+    <span class="doc-name" id="headerDocType">Mutual NDA</span>
+  </div>
+
+  <div class="header-actions">
+    <!-- Backend Status Indicator -->
+    <div class="status-pill" id="backendStatusPill" title="Click to test backend connection" onclick="checkBackendHealth()">
+      <span class="dot"></span>
+      <span id="backendStatusText">Checking Backend...</span>
+    </div>
+
+    <!-- History Drawer Button -->
+    <button class="ghost" style="padding: 6px 12px; font-size: 13px;" onclick="openHistoryDrawer()">
+      📂 My Documents
+    </button>
+
+    <!-- Auth Button / Badge -->
+    <div id="authContainer">
+      <button class="auth-btn" id="loginBtn" onclick="openAuthModal('login')">
+        Sign In / Register
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Main App Layout -->
+<div class="layout">
+
+  <!-- Left: Guided Wizard -->
+  <div class="wizard">
+    <div class="template-select-bar">
+      <label for="templateSelect">Template Type</label>
+      <div class="field" style="margin-bottom: 0;">
+        <select id="templateSelect">
+          <option value="nda" selected>Mutual Non-Disclosure Agreement (NDA)</option>
+          <option value="lease">Residential Lease Agreement</option>
+          <option value="employment">Standard Employment Agreement</option>
+          <option value="freelance">Freelance / Independent Contractor</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="dot done" data-dot="1"></div>
+      <div class="dot" data-dot="2"></div>
+      <div class="dot" data-dot="3"></div>
+    </div>
+
+    <!-- Step 1 -->
+    <div id="step-1">
+      <div class="step-label">Step 1 of 3</div>
+      <h2 class="step-title">Who is involved?</h2>
+      <div class="field">
+        <label for="partyA" id="labelPartyA">Your Name / Disclosing Entity</label>
+        <input id="partyA" placeholder="e.g. Acme Innovations LLC" value="Acme Robotics LLC">
+        <div class="helper">Enter your exact legal name or registered corporate entity.</div>
+      </div>
+      <div class="field">
+        <label for="partyB" id="labelPartyB">Receiving Party / Counterparty</label>
+        <input id="partyB" placeholder="e.g. Jordan Reyes" value="Jordan Reyes">
+      </div>
+      <div class="field">
+        <label for="jurisdiction">Governing Law (Jurisdiction)</label>
+        <select id="jurisdiction">
+          <option value="">Select jurisdiction...</option>
+          <option value="Delaware" selected>Delaware</option>
+          <option value="California">California</option>
+          <option value="New York">New York</option>
+          <option value="Texas">Texas</option>
+          <option value="Massachusetts">Massachusetts</option>
+          <option value="Washington">Washington</option>
+          <option value="Illinois">Illinois</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="step-2" style="display:none">
+      <div class="step-label">Step 2 of 3</div>
+      <h2 class="step-title">Agreement Terms</h2>
+      <div class="field">
+        <label for="effDate">Effective Date</label>
+        <input id="effDate" type="date">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="term">Agreement Duration</label>
+          <select id="term">
+            <option value="1">1 year</option>
+            <option value="2" selected>2 years</option>
+            <option value="3">3 years</option>
+            <option value="5">5 years</option>
+            <option value="7">7 years (High term)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="mutual">Protection Scope</label>
+          <select id="mutual">
+            <option value="mutual" selected>Mutual (Two-way)</option>
+            <option value="oneway">One-way (Unilateral)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div id="step-3" style="display:none">
+      <div class="step-label">Step 3 of 3</div>
+      <h2 class="step-title">Risk & Remedies</h2>
+      <div class="field">
+        <label for="penalty">Liquidated Damages (Fixed Penalty)</label>
+        <select id="penalty">
+          <option value="none" selected>Do not include liquidated damages</option>
+          <option value="fixed">Include pre-determined penalty amount</option>
+        </select>
+        <div class="helper">Surfaces risk flags if set to unusually high amounts.</div>
+      </div>
+      <div class="field" id="penaltyAmountField" style="display:none">
+        <label for="penaltyAmount">Penalty Amount ($ USD)</label>
+        <input id="penaltyAmount" type="number" placeholder="50000" value="50000">
+      </div>
+    </div>
+
+    <!-- Wizard Navigation -->
+    <div class="nav-buttons">
+      <button class="ghost" id="backBtn" disabled>← Back</button>
+      <button id="nextBtn" class="primary-gold">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Right: Live Preview & Document Actions -->
+  <div class="preview-pane">
+    
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span class="badge-tag draft" id="docStatusBadge">Draft</span>
+        <span id="docMetaInfo" style="font-size: 12px; color: var(--slate);">Real-time local preview</span>
+      </div>
+      <div class="toolbar-right">
+        <button class="ghost" id="btnSyncBackend" onclick="saveDocumentToBackend()" style="padding: 7px 12px; font-size: 12.5px;">
+          ☁️ Save / AI Sync
+        </button>
+        <button class="ghost" id="btnExportDocx" onclick="exportCurrentDoc('docx')" style="padding: 7px 12px; font-size: 12.5px;">
+          📝 Export Word
+        </button>
+        <button class="ghost" id="btnExportPdf" onclick="exportCurrentDoc('pdf')" style="padding: 7px 12px; font-size: 12.5px;">
+          📄 Export PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- The Paper Document -->
+    <div class="paper" id="paperContainer">
+      <h1 id="paperTitle">MUTUAL NON-DISCLOSURE AGREEMENT</h1>
+      <div class="subline" id="subline">Draft — live updating with questions and AI validation</div>
+
+      <div class="clause" id="c-parties" onclick="handleClauseClick(this)">
+        <button class="explain-trigger" onclick="explainSpecificClause(event, this)">✨ Explain with AI</button>
+        <span class="num">1.</span><strong>Parties.</strong>
+        This Non-Disclosure Agreement ("Agreement") is entered into between
+        <span class="placeholder" id="p-partyA">Acme Robotics LLC</span> and
+        <span class="placeholder" id="p-partyB">Jordan Reyes</span>,
+        effective as of <span class="placeholder" id="p-date">[effective date]</span>.
+      </div>
+
+      <div class="clause" id="c-confidential" onclick="handleClauseClick(this)">
+        <button class="explain-trigger" onclick="explainSpecificClause(event, this)">✨ Explain with AI</button>
+        <span class="num">2.</span><strong>Confidential Information.</strong>
+        Each party may disclose information considered proprietary or confidential in connection with this
+        business relationship. This confidentiality obligation is a <span class="placeholder" id="p-direction">mutual</span> obligation.
+      </div>
+
+      <div class="clause" id="c-term" onclick="handleClauseClick(this)">
+        <button class="explain-trigger" onclick="explainSpecificClause(event, this)">✨ Explain with AI</button>
+        <span class="num">3.</span><strong>Term & Duration.</strong>
+        This Agreement and the confidentiality obligations herein remain in effect for
+        <span class="placeholder" id="p-term">2 years</span> from the effective date above.
+      </div>
+
+      <div class="clause" id="c-penalty" style="display:none" onclick="handleClauseClick(this)">
+        <button class="explain-trigger" onclick="explainSpecificClause(event, this)">✨ Explain with AI</button>
+        <span class="num" id="penalty-num">4.</span><strong>Liquidated Damages.</strong>
+        A material breach of Section 2 entitles the non-breaching party to
+        <span class="placeholder" id="p-penalty">$50,000</span> in liquidated damages.
+        <span class="flag-note">⚠️ Fixed-dollar penalty clauses may be challenged in court unless reasonable.</span>
+      </div>
+
+      <div class="clause" id="c-governing" onclick="handleClauseClick(this)">
+        <button class="explain-trigger" onclick="explainSpecificClause(event, this)">✨ Explain with AI</button>
+        <span class="num" id="gov-num">4.</span><strong>Governing Law.</strong>
+        This Agreement is governed by and construed under the laws of the State of
+        <span class="placeholder" id="p-law">Delaware</span>.
+      </div>
+    </div>
+
+    <!-- Real-time Risk Assessment Panel -->
+    <div class="risk-panel" id="riskPanel">
+      <h3>
+        <span>🛡️ Legal Risk Analysis</span>
+        <span id="riskCountBadge" style="font-size: 11px; font-weight:600; padding:2px 8px; border-radius:12px; background:#F1F5F9; color:var(--slate);">0 issues</span>
+      </h3>
+      <div id="riskList">
+        <div style="font-size: 13px; color: var(--slate);">No risk flags identified. Your draft adheres to standard commercial terms.</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Auth Modal -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    <h3 class="modal-title" id="authModalTitle">Welcome to LegalEase</h3>
+    <p class="modal-subtitle">Sign in or register to save documents, analyze risks, and export.</p>
+
+    <div class="field">
+      <label for="authEmail">Email Address</label>
+      <input type="email" id="authEmail" placeholder="yourname@example.com" value="demo@legalease.com">
+    </div>
+    <div class="field">
+      <label for="authPassword">Password</label>
+      <input type="password" id="authPassword" placeholder="••••••••" value="demo1234">
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 24px;">
+      <button class="primary-gold" style="flex:1" onclick="submitAuth('login')">Log In</button>
+      <button class="ghost" style="flex:1" onclick="submitAuth('register')">Register</button>
+    </div>
+
+    <div style="margin-top: 16px; text-align: center;">
+      <button class="ghost" style="font-size: 12px; padding: 6px 10px; width: 100%;" onclick="quickGuestLogin()">
+        ⚡ 1-Click Demo / Test Login
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- AI Explanation Modal -->
+<div class="modal-overlay" id="explainModal">
+  <div class="explain-modal">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <h4>🤖 AI Plain-English Breakdown</h4>
+      <button onclick="closeExplainModal()" style="background:none; border:none; color:#94A3B8; cursor:pointer; font-size:18px; padding:0;">✕</button>
+    </div>
+    <div id="explainContent" style="margin-top: 12px; font-size: 14px; line-height: 1.6;">
+      Analyzing clause language...
+    </div>
+  </div>
+</div>
+
+<!-- History Drawer -->
+<div class="drawer-overlay" id="historyOverlay" onclick="closeHistoryDrawer()">
+  <div class="drawer" onclick="event.stopPropagation()">
+    <div class="drawer-header">
+      <h3 style="margin:0; font-size:17px; font-weight:700;">Saved Documents</h3>
+      <button class="ghost" style="padding:4px 8px;" onclick="closeHistoryDrawer()">✕</button>
+    </div>
+    <div class="doc-list" id="savedDocsList">
+      <div style="color:var(--slate); font-size:13px; text-align:center; padding:20px;">
+        Loading saved documents...
+      </div>
+    </div>
+    <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--paper-line);">
+      <button class="ghost" style="width:100%; font-size:13px;" onclick="startNewDocument()">
+        ➕ Create New Document
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+  // Configuration
+  const API_BASE = 'http://127.0.0.1:4000/api';
+  
+  // App State
+  const appState = {
+    step: 1,
+    totalSteps: 3,
+    currentDocId: null,
+    backendConnected: false,
+    currentUser: null,
+    token: localStorage.getItem('token') || null
+  };
+
+  // DOM Elements
+  const els = {
+    templateSelect: document.getElementById('templateSelect'),
+    partyA: document.getElementById('partyA'),
+    partyB: document.getElementById('partyB'),
+    jurisdiction: document.getElementById('jurisdiction'),
+    effDate: document.getElementById('effDate'),
+    term: document.getElementById('term'),
+    mutual: document.getElementById('mutual'),
+    penalty: document.getElementById('penalty'),
+    penaltyAmount: document.getElementById('penaltyAmount'),
+    headerDocType: document.getElementById('headerDocType'),
+    paperTitle: document.getElementById('paperTitle'),
+    backendStatusPill: document.getElementById('backendStatusPill'),
+    backendStatusText: document.getElementById('backendStatusText'),
+    authContainer: document.getElementById('authContainer'),
+    docStatusBadge: document.getElementById('docStatusBadge'),
+    docMetaInfo: document.getElementById('docMetaInfo'),
+    riskCountBadge: document.getElementById('riskCountBadge'),
+    riskList: document.getElementById('riskList'),
+  };
+
+  // Set default date to today
+  document.getElementById('effDate').valueAsDate = new Date();
+
+  // Toast Notification Helper
+  function showToast(message, type = 'info'){
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    const icon = type === 'success' ? '✅' : (type === 'error' ? '❌' : 'ℹ️');
+    toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, 3500);
+  }
+
+  // Format Date Helper
+  function fmtDate(v){
+    if(!v) return null;
+    const d = new Date(v + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  }
+
+  // Wizard Rendering
+  function renderLivePreview(){
+    const tpl = els.templateSelect.value;
+    const pA = els.partyA.value.trim() || '[Your Name / Entity]';
+    const pB = els.partyB.value.trim() || '[Counterparty Name]';
+    const dateFormatted = fmtDate(els.effDate.value) || '[Effective Date]';
+    const law = els.jurisdiction.value || '[Jurisdiction]';
+    const termVal = els.term.value;
+    const termStr = termVal + ' year' + (termVal === '1' ? '' : 's');
+    const isMutual = els.mutual.value === 'mutual';
+
+    document.getElementById('p-partyA').textContent = pA;
+    document.getElementById('p-partyB').textContent = pB;
+    document.getElementById('p-date').textContent = dateFormatted;
+    document.getElementById('p-direction').textContent = isMutual ? 'mutual' : 'one-way';
+    document.getElementById('p-term').textContent = termStr;
+    document.getElementById('p-law').textContent = law;
+
+    const penaltyClause = document.getElementById('c-penalty');
+    const penaltyNum = document.getElementById('penalty-num');
+    const govNum = document.getElementById('gov-num');
+
+    if(els.penalty.value === 'fixed'){
+      penaltyClause.style.display = 'block';
+      const amt = els.penaltyAmount.value ? '$' + Number(els.penaltyAmount.value).toLocaleString() : '$0';
+      document.getElementById('p-penalty').textContent = amt;
+      penaltyNum.textContent = '4.';
+      govNum.textContent = '5.';
+      penaltyClause.className = 'clause flagged-warn';
+    } else {
+      penaltyClause.style.display = 'none';
+      govNum.textContent = '4.';
+    }
+
+    // Local heuristic risk analysis until synced with backend
+    evaluateLocalRisks();
+  }
+
+  function evaluateLocalRisks(){
+    const risks = [];
+    if(els.penalty.value === 'fixed'){
+      const amt = Number(els.penaltyAmount.value || 0);
+      risks.push({
+        level: 'warning',
+        message: 'Fixed-dollar penalty clauses may be challenged as unenforceable penalties if not tied to actual estimated damages.'
+      });
+      if(amt > 250000){
+        risks.push({
+          level: 'danger',
+          message: `Penalty amount ($${amt.toLocaleString()}) is unusually high for a standard commercial NDA.`
+        });
+      }
+    }
+    if(Number(els.term.value) > 5){
+      risks.push({
+        level: 'warning',
+        message: 'Confidentiality terms over 5 years are uncommon and may face judicial scrutiny as unreasonable restraint.'
+      });
+    }
+    if(!els.jurisdiction.value){
+      risks.push({
+        level: 'info',
+        message: 'Governing law is unselected. Specifying a state jurisdiction avoids costly conflict-of-law disputes.'
+      });
+    }
+
+    renderRiskList(risks);
+  }
+
+  function renderRiskList(risks){
+    els.riskCountBadge.textContent = `${risks.length} issue${risks.length === 1 ? '' : 's'}`;
+    if(risks.length === 0){
+      els.riskList.innerHTML = '<div style="font-size:13px; color:var(--slate);">No risk flags identified. Your draft adheres to standard commercial terms.</div>';
+      return;
+    }
+
+    els.riskList.innerHTML = risks.map(r => {
+      const cls = r.level === 'danger' || r.level === 'high' ? 'danger' : (r.level === 'warning' ? 'warn' : 'info');
+      const icon = cls === 'danger' ? '🔴' : (cls === 'warn' ? '⚠️' : 'ℹ️');
+      return `
+        <div class="risk-card ${cls}">
+          <span>${icon}</span>
+          <div>${r.message}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Wizard Step Navigation
+  function goToStep(n){
+    for(let i = 1; i <= appState.totalSteps; i++){
+      const el = document.getElementById('step-' + i);
+      if(el) el.style.display = (i === n) ? 'block' : 'none';
+      const dot = document.querySelector(`[data-dot="${i}"]`);
+      if(dot) dot.classList.toggle('done', i <= n);
+    }
+    document.getElementById('backBtn').disabled = (n === 1);
+    document.getElementById('nextBtn').textContent = (n === appState.totalSteps) ? 'Finish & Sync ✨' : 'Continue →';
+    appState.step = n;
+  }
+
+  // Event Listeners for inputs
+  Object.values(els).forEach(el => {
+    if(el && (el.tagName === 'INPUT' || el.tagName === 'SELECT')){
+      el.addEventListener('input', renderLivePreview);
+    }
+  });
+
+  els.penalty.addEventListener('change', (e) => {
+    document.getElementById('penaltyAmountField').style.display =
+      e.target.value === 'fixed' ? 'block' : 'none';
+    renderLivePreview();
+  });
+
+  els.templateSelect.addEventListener('change', (e) => {
+    const val = e.target.value;
+    const names = {
+      nda: 'Mutual Non-Disclosure Agreement',
+      lease: 'Residential Lease Agreement',
+      employment: 'Standard Employment Agreement',
+      freelance: 'Freelance Contractor Agreement'
+    };
+    els.headerDocType.textContent = names[val] || 'Legal Document';
+    els.paperTitle.textContent = (names[val] || 'LEGAL AGREEMENT').toUpperCase();
+    renderLivePreview();
+  });
+
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if(appState.step < appState.totalSteps){
+      goToStep(appState.step + 1);
+    } else {
+      saveDocumentToBackend();
+    }
+  });
+
+  document.getElementById('backBtn').addEventListener('click', () => {
+    if(appState.step > 1){
+      goToStep(appState.step - 1);
+    }
+  });
+
+  // --- Backend API Integration ---
+
+  async function checkBackendHealth(){
+    els.backendStatusPill.className = 'status-pill';
+    els.backendStatusText.textContent = 'Connecting...';
+
+    try {
+      const res = await fetch(`${API_BASE}/health`, { method: 'GET' });
+      const data = await res.json();
+      if(res.ok && data.status === 'ok'){
+        appState.backendConnected = true;
+        els.backendStatusPill.className = 'status-pill connected';
+        els.backendStatusText.textContent = '🟢 Backend Connected';
+        return true;
+      } else {
+        throw new Error('Health check failed');
+      }
+    } catch(err){
+      appState.backendConnected = false;
+      els.backendStatusPill.className = 'status-pill disconnected';
+      els.backendStatusText.textContent = '🔴 Backend Offline';
+      return false;
+    }
+  }
+
+  async function checkCurrentUser(){
+    if(!appState.token){
+      renderAuthUI(null);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        headers: { 'Authorization': `Bearer ${appState.token}` }
+      });
+      if(res.ok){
+        const user = await res.json();
+        appState.currentUser = user;
+        renderAuthUI(user);
+      } else {
+        localStorage.removeItem('token');
+        appState.token = null;
+        renderAuthUI(null);
+      }
+    } catch(e){
+      console.warn('Could not verify session with backend:', e);
+    }
+  }
+
+  function renderAuthUI(user){
+    if(user){
+      const initial = (user.name || user.email || 'U')[0].toUpperCase();
+      els.authContainer.innerHTML = `
+        <div class="user-badge">
+          <div class="avatar">${initial}</div>
+          <span>${user.name || user.email}</span>
+          <button onclick="logout()" style="background:none; border:none; color:var(--slate); cursor:pointer; padding:2px; font-size:12px;" title="Sign out">✕</button>
+        </div>
+      `;
+    } else {
+      els.authContainer.innerHTML = `
+        <button class="auth-btn" onclick="openAuthModal('login')">
+          Sign In / Register
+        </button>
+      `;
+    }
+  }
+
+  // Auth Modal Handlers
+  function openAuthModal(mode = 'login'){
+    document.getElementById('authModal').classList.add('open');
+  }
+  function closeAuthModal(){
+    document.getElementById('authModal').classList.remove('open');
+  }
+
+  async function submitAuth(mode){
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+
+    if(!email || !password){
+      showToast('Please enter both email and password.', 'error');
+      return;
+    }
+
+    try {
+      const endpoint = mode === 'register' ? '/auth/register' : '/auth/login';
+      let res = await fetch(`${API_BASE}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name: email.split('@')[0] })
+      });
+      let data = await res.json();
+
+      // If login fails with 401, auto try register or show error
+      if(!res.ok && mode === 'login' && data.error && data.error.includes('Invalid')){
+        // Check if user wants to auto-register
+        res = await fetch(`${API_BASE}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, name: email.split('@')[0] })
+        });
+        data = await res.json();
+      }
+
+      if(!res.ok){
+        showToast(data.error || 'Authentication failed', 'error');
+        return;
+      }
+
+      appState.token = data.token;
+      appState.currentUser = data.user;
+      localStorage.setItem('token', data.token);
+      renderAuthUI(data.user);
+      closeAuthModal();
+      showToast(`Welcome, ${data.user.name || data.user.email}!`, 'success');
+      
+      // Auto save if user was finishing document
+      if(appState.step === appState.totalSteps){
+        saveDocumentToBackend();
+      }
+    } catch(err){
+      showToast('Could not reach backend server at ' + API_BASE, 'error');
+    }
+  }
+
+  async function quickGuestLogin(){
+    document.getElementById('authEmail').value = 'demo@legalease.com';
+    document.getElementById('authPassword').value = 'demo1234';
+    await submitAuth('login');
+  }
+
+  function logout(){
+    appState.token = null;
+    appState.currentUser = null;
+    localStorage.removeItem('token');
+    renderAuthUI(null);
+    showToast('Signed out successfully.');
+  }
+
+  // --- Save / Sync Document to Backend ---
+  async function saveDocumentToBackend(){
+    const subline = document.getElementById('subline');
+
+    if(!appState.token){
+      openAuthModal();
+      showToast('Please sign in or use Demo Login to sync with backend.', 'info');
+      return;
+    }
+
+    const answers = {
+      party_a: els.partyA.value,
+      party_b: els.partyB.value,
+      jurisdiction: els.jurisdiction.value,
+      effective_date: els.effDate.value,
+      term: els.term.value,
+      mutual: els.mutual.value,
+      penalty: els.penalty.value,
+      penalty_amount: els.penaltyAmount.value
+    };
+
+    const templateType = els.templateSelect.value;
+    const title = els.paperTitle.textContent;
+
+    subline.textContent = 'Drafting and syncing with backend AI engine...';
+    els.docStatusBadge.className = 'badge-tag draft';
+    els.docStatusBadge.textContent = 'Syncing...';
+
+    try {
+      let res, data;
+      if(appState.currentDocId){
+        // Update existing document
+        res = await fetch(`${API_BASE}/documents/${appState.currentDocId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${appState.token}`
+          },
+          body: JSON.stringify({ answers, title })
+        });
+      } else {
+        // Create new document
+        res = await fetch(`${API_BASE}/documents`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${appState.token}`
+          },
+          body: JSON.stringify({
+            template_type: templateType,
+            title,
+            answers
+          })
+        });
+      }
+
+      data = await res.json();
+
+      if(!res.ok){
+        subline.textContent = 'Error: ' + (data.error || 'Failed to sync with backend');
+        showToast(data.error || 'Failed to save document', 'error');
+        return;
+      }
+
+      appState.currentDocId = data.id;
+      els.docStatusBadge.className = 'badge-tag synced';
+      els.docStatusBadge.textContent = `Synced (Doc #${data.id})`;
+      els.docMetaInfo.textContent = `Saved ${new Date().toLocaleTimeString()} • ${data.risk_flags ? data.risk_flags.length : 0} risk flags`;
+      subline.textContent = `Document #${data.id} synchronized • Last updated ${new Date().toLocaleDateString()}`;
+
+      if(data.risk_flags){
+        renderRiskList(data.risk_flags);
+      }
+
+      showToast(`Document #${data.id} saved & synced successfully!`, 'success');
+
+    } catch(err){
+      subline.textContent = 'Could not reach backend API at ' + API_BASE;
+      showToast('Network error: Could not reach backend server.', 'error');
+      console.error(err);
+    }
+  }
+
+  // --- Export Document (PDF / DOCX) ---
+  async function exportCurrentDoc(format = 'docx'){
+    if(!appState.token){
+      openAuthModal();
+      showToast('Please sign in to export documents.', 'info');
+      return;
+    }
+
+    if(!appState.currentDocId){
+      showToast('Saving draft first before exporting...', 'info');
+      await saveDocumentToBackend();
+      if(!appState.currentDocId) return;
+    }
+
+    showToast(`Preparing ${format.toUpperCase()} export...`, 'info');
+
+    try {
+      const res = await fetch(`${API_BASE}/documents/${appState.currentDocId}/export?format=${format}`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${appState.token}` }
+      });
+
+      if(!res.ok){
+        const errData = await res.json();
+        showToast(errData.error || 'Export failed', 'error');
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${els.paperTitle.textContent.replace(/\s+/g, '_')}_Doc${appState.currentDocId}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      showToast(`${format.toUpperCase()} downloaded successfully!`, 'success');
+    } catch(err){
+      showToast('Export download error: ' + err.message, 'error');
+    }
+  }
+
+  // --- Clause AI Explanation ---
+  async function explainSpecificClause(e, btn){
+    e.stopPropagation();
+    const clauseEl = btn.closest('.clause');
+    const text = clauseEl.innerText.replace('✨ Explain with AI', '').trim();
+    
+    document.getElementById('explainModal').classList.add('open');
+    document.getElementById('explainContent').innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="display:inline-block; animation:spin 1s infinite linear;">⚙️</span>
+        <span>Consulting AI Legal Explainer...</span>
+      </div>
+    `;
+
+    try {
+      if(appState.currentDocId && appState.token){
+        const res = await fetch(`${API_BASE}/documents/${appState.currentDocId}/explain-clause`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${appState.token}`
+          },
+          body: JSON.stringify({ clause_text: text })
+        });
+        const data = await res.json();
+        if(res.ok && data.explanation){
+          document.getElementById('explainContent').innerHTML = `
+            <p><strong>Clause Text:</strong> <em>"${text.slice(0, 140)}..."</em></p>
+            <hr style="border:none; border-top:1px solid #2C3E66; margin:10px 0;">
+            <p style="color:#F1F5F9; font-size:14.5px;">${data.explanation}</p>
+          `;
+          return;
+        }
+      }
+
+      // Fallback local explanation if not logged in or offline
+      document.getElementById('explainContent').innerHTML = `
+        <p><strong>Clause Text:</strong> <em>"${text.slice(0, 140)}..."</em></p>
+        <hr style="border:none; border-top:1px solid #2C3E66; margin:10px 0;">
+        <p style="color:#F1F5F9; font-size:14.5px;">This standard contractual provision defines legal obligations and boundaries for the parties involved.</p>
+      `;
+    } catch(err){
+      document.getElementById('explainContent').textContent = 'Unable to fetch explanation. Backend is offline.';
+    }
+  }
+
+  function handleClauseClick(el){
+    // Clause focus handler
+  }
+
+  function closeExplainModal(){
+    document.getElementById('explainModal').classList.remove('open');
+  }
+
+  // --- History Drawer Handlers ---
+  async function openHistoryDrawer(){
+    document.getElementById('historyOverlay').classList.add('open');
+    const listContainer = document.getElementById('savedDocsList');
+    
+    if(!appState.token){
+      listContainer.innerHTML = `
+        <div style="text-align:center; padding:24px; color:var(--slate);">
+          <p>Please sign in to view your saved documents.</p>
+          <button class="primary-gold" onclick="closeHistoryDrawer(); openAuthModal();">Sign In</button>
+        </div>
+      `;
+      return;
+    }
+
+    try {
+      listContainer.innerHTML = '<div style="color:var(--slate); text-align:center; padding:20px;">Fetching documents...</div>';
+      const res = await fetch(`${API_BASE}/documents`, {
+        headers: { 'Authorization': `Bearer ${appState.token}` }
+      });
+      const docs = await res.json();
+
+      if(!res.ok || !Array.isArray(docs) || docs.length === 0){
+        listContainer.innerHTML = '<div style="color:var(--slate); text-align:center; padding:20px;">No saved documents found yet. Create your first draft!</div>';
+        return;
+      }
+
+      listContainer.innerHTML = docs.map(d => `
+        <div class="doc-item" onclick="loadDocument(${d.id})">
+          <div class="doc-item-title">${d.title} (Doc #${d.id})</div>
+          <div class="doc-item-meta">
+            <span>Template: ${d.template_type.toUpperCase()}</span>
+            <span>${new Date(d.updated_at || d.created_at).toLocaleDateString()}</span>
+          </div>
+        </div>
+      `).join('');
+    } catch(err){
+      listContainer.innerHTML = '<div style="color:var(--flag-danger); text-align:center; padding:20px;">Could not load documents from server.</div>';
+    }
+  }
+
+  function closeHistoryDrawer(){
+    document.getElementById('historyOverlay').classList.remove('open');
+  }
+
+  async function loadDocument(docId){
+    try {
+      const res = await fetch(`${API_BASE}/documents/${docId}`, {
+        headers: { 'Authorization': `Bearer ${appState.token}` }
+      });
+      const data = await res.json();
+      if(!res.ok){
+        showToast(data.error || 'Failed to load document', 'error');
+        return;
+      }
+
+      appState.currentDocId = data.id;
+      const ans = data.answers || {};
+
+      // Populate inputs
+      if(ans.party_a) els.partyA.value = ans.party_a;
+      if(ans.party_b) els.partyB.value = ans.party_b;
+      if(ans.jurisdiction) els.jurisdiction.value = ans.jurisdiction;
+      if(ans.effective_date) els.effDate.value = ans.effective_date;
+      if(ans.term) els.term.value = ans.term;
+      if(ans.mutual) els.mutual.value = ans.mutual;
+      if(ans.penalty) {
+        els.penalty.value = ans.penalty;
+        document.getElementById('penaltyAmountField').style.display = ans.penalty === 'fixed' ? 'block' : 'none';
+      }
+      if(ans.penalty_amount) els.penaltyAmount.value = ans.penalty_amount;
+      if(data.template_type) els.templateSelect.value = data.template_type;
+
+      els.docStatusBadge.className = 'badge-tag synced';
+      els.docStatusBadge.textContent = `Loaded (Doc #${data.id})`;
+      els.docMetaInfo.textContent = `Loaded from cloud • ${data.risk_flags ? data.risk_flags.length : 0} risk flags`;
+
+      renderLivePreview();
+      closeHistoryDrawer();
+      showToast(`Document #${data.id} loaded into editor!`, 'success');
+    } catch(err){
+      showToast('Failed to load document: ' + err.message, 'error');
+    }
+  }
+
+  function startNewDocument(){
+    appState.currentDocId = null;
+    els.partyA.value = 'Acme Robotics LLC';
+    els.partyB.value = 'Jordan Reyes';
+    els.jurisdiction.value = 'Delaware';
+    els.term.value = '2';
+    els.mutual.value = 'mutual';
+    els.penalty.value = 'none';
+    document.getElementById('penaltyAmountField').style.display = 'none';
+    els.docStatusBadge.className = 'badge-tag draft';
+    els.docStatusBadge.textContent = 'Draft';
+    els.docMetaInfo.textContent = 'New draft';
+    goToStep(1);
+    renderLivePreview();
+    closeHistoryDrawer();
+    showToast('Started new document draft.');
+  }
+
+  // Initialization
+  async function initApp(){
+    renderLivePreview();
+    await checkBackendHealth();
+    await checkCurrentUser();
+    
+    // Periodically ping backend health
+    setInterval(checkBackendHealth, 30000);
+  }
+
+  window.addEventListener('DOMContentLoaded', initApp);
+</script>
+
+</body>
+</html>
